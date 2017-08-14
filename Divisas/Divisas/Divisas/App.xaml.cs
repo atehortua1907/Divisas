@@ -14,7 +14,7 @@ namespace Divisas
         {
             InitializeComponent();
 
-            MainPage = new DivisasPage();
+            MainPage = new ForeignExchangePage();
         }
 
         protected override void OnStart()

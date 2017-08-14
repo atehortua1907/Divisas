@@ -1,22 +1,36 @@
-﻿
-
-namespace Divisas.ViewModels
+﻿namespace Divisas.ViewModels
 {
+    using Divisas.Models;
     using GalaSoft.MvvmLight.Command;
+    using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Windows.Input;
     using Xamarin.Forms;
+    using System;
+    using Divisas.Services;
 
     public class MainViewModel : INotifyPropertyChanged
     {
+        
         #region Attributes
+        // Atributos dependientes para que cuando se cambien se refresquen en la viewmodel
         string _dollars;
         string _euros;
         string _pounds;
+        ObservableCollection<Rate> _rates;
+        bool _isEnabled;
+        bool _isRunning;
+        int _sourceRateId;
+        int _targetRateId;
+        string _amount;
         #endregion
 
+        #region Services
+        ApiService apiService;
+        #endregion
 
         #region Properties
+
         public string Pesos { get; set; }
 
         public string Dollars
@@ -40,7 +54,7 @@ namespace Divisas.ViewModels
             {
                 if (value != _euros)
                 {
-                    _dollars = value;
+                    _euros = value;
                     PropertyChanged?.Invoke(this,
                         new PropertyChangedEventArgs(nameof(Euros)));
                 }
@@ -54,18 +68,36 @@ namespace Divisas.ViewModels
             {
                 if (value != _pounds)
                 {
-                    _dollars = value;
+                    _pounds = value;
                     PropertyChanged?.Invoke(this,
                         new PropertyChangedEventArgs(nameof(Pounds)));
                 }
             }
+
         }
+
+        public ObservableCollection<Rate> Rates { get; set; }
+
+        public int SourceRateId { get; set; }
+
+        public int TargetRateId { get; set; }
+
+        public bool IsEnabled { get; set; }
+
+        public bool IsRunning { get; set; }
+
+        public string Result { get; set; }
+
         #endregion
 
         #region Constructors
         public MainViewModel()
         {
+            Result = "Enter an amount select source rate, select target rate and press convert button";
+            apiService = new ApiService();
+            LoadRates();
         }
+
         #endregion
 
         #region Commands
@@ -73,7 +105,14 @@ namespace Divisas.ViewModels
         {
             get { return new RelayCommand(Convert); }
         }
+
+        public ICommand ConvertPlusCommand
+        {
+            get {return new RelayCommand(ConvertPlus); }
+        }
         #endregion
+
+
 
         #region Methods
         async void Convert()
@@ -105,6 +144,22 @@ namespace Divisas.ViewModels
             Euros = string.Format("{0:C2}", euros);
             Pounds = string.Format("{0:C2}", pounds);
         }
+
+        void ConvertPlus()
+        {
+            throw new NotImplementedException();
+        }
+
+        async void LoadRates()
+        {
+            IsRunning = true;
+            IsEnabled = false;
+            var response = await apiService.GetRates();
+            IsRunning = false;
+            IsEnabled = true;
+
+        }
+
         #endregion
 
         #region Events
